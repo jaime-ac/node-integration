@@ -16,18 +16,10 @@ const app = express();
 app.use(express.json()); 
 
 //Inicia o servidor na porta definida.
-// app.listen(port); 
+app.listen(port); 
+console.log(`Backend rodando na porta ${port}`)
 
-// console.log(`Backend rodando na porta ${port}`)
 
-db().then(() => {
-    // Inicia o servidor na porta definida após a conexão
-    app.listen(port, () => {
-        console.log(`Backend rodando na porta ${port}`);
-    });
-}).catch((error) => {
-    console.error("Erro ao estabelecer conexão com o banco:", error.message);
-});
 
 //🗒️pegar ou listar meus dados;
 app.get("/", (req, res) =>{
@@ -38,4 +30,10 @@ app.get("/", (req, res) =>{
 
 });
 
-//
+// ✏️criar uma rota
+app.get("/users", (req, res) => {
+
+    const usuario = await db.selectCustomers();
+    res.json(usuario);
+
+});

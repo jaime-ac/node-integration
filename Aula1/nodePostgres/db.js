@@ -1,7 +1,11 @@
-async function connect(){
+//função assincrona permite que várias operações sejam executadas de forma simultânea sem bloquear a execução de outras tarefas;
+async function connect(){ 
 
-    if(global.connection){
+    if(global.connection){ //Verifica se já existe uma conexão global com o banco de dados
+
+        //Evita criar múltiplas conexões: Se já houver uma conexão existente (global.connection), apenas a reutiliza.
         return global.connection.connect();
+
     }
 
     //O Pool é recomendado para aplicações web, pois gerencia conexões de forma eficiente.
@@ -13,25 +17,35 @@ async function connect(){
         //estou pegando toda informação do meu banco que está armazenado na variável {CONNECTION_STRING};
         connectionString:process.env.CONNECTION_STRING // Usa a URL do banco diretamente
 
-        //esse seria o jeito de passar informações caso eu não tivesse definido tudo na variável {CONNECTION_STRIN} no .env
-        // DB_USER=postgres
-        // DB_HOST=localhost
-        // DB_NAME=meubanco
-        // DB_PASS=senha
-        // DB_PORT=5432
-
     });
 
-    const client = await pool.connect(); //estabelece a conexão com o banco de dados;
+    //estabelece a conexão com o banco de dados;
+    const client = await pool.connect(); 
     console.log("Foi criado o pool de conexão!");
 
-    const res = await client.query("select now()");
+    //pega a hora exata da conexão;
+    const res = await client.query("select now()"); 
+    console.log("Horário: ", res.rows[0]); 
 
-    console.log("Horário: ",res.rows[0]);
+    //libera a conexão com o banco de dados de volta para o pool de conexões.
+    client.release(); 
 
-    client.release();
+    //está atribuindo o objeto pool à variável global connect no Node.js
+    global.connect = pool; 
 
-    return client.connect();
+    return pool.connect(); 
 };
 
-module.exports = connect;
+//chamar a função connect;
+connect(); 
+
+async function selectCustomers() {
+    
+    const client = await connect();
+    const res = await client.query("SELECT * FROM users");
+    return res.rows;
+    
+}
+
+//chamar a função selectCustomers;
+selectCustomers();
